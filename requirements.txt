@@ -1,0 +1,7 @@
+python-dotenv
+aiohttp
+fastapi
+pydantic
+uvicorn
+bitget
+psycopg2-binary
