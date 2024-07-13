@@ -6,7 +6,7 @@ from google.oauth2.credentials import Credentials
 from google.auth.exceptions import RefreshError
 from googleapiclient.discovery import build
 from pathlib import Path
-import base64
+import base64, os
 import json, asyncio
 from bitget import BitgetClient
 
@@ -21,9 +21,9 @@ class EmailSender(BitgetClient):
     def auth(self):
         creds = None
         # Check if the token file exists
-        if self.token_path.exists():
-            with open(self.token_path, 'r') as token_file:
-                creds = Credentials.from_authorized_user_info(json.load(token_file))
+     
+        with open("/home/mrpau/Desktop/Secret_Project/other_layers/api_masternode/schedule_taks/credentials/emailtoken.json", 'r') as token_file:
+            creds = Credentials.from_authorized_user_info(json.load(token_file))
 
         # If there are no (valid) credentials available, prompt the user to authenticate.
         if not creds or not creds.valid:
@@ -35,7 +35,7 @@ class EmailSender(BitgetClient):
             else:
                 from google_auth_oauthlib.flow import InstalledAppFlow
                 flow = InstalledAppFlow.from_client_secrets_file(
-                    self.creds_path, scopes=['https://www.googleapis.com/auth/gmail.send'])
+                    "/home/mrpau/Desktop/Secret_Project/other_layers/api_masternode/schedule_taks/credentials/credentials.json", scopes=['https://www.googleapis.com/auth/gmail.send'])
                 creds = flow.run_local_server(port=0)
 
             # Save the credentials for the next run
@@ -199,14 +199,19 @@ class EmailSender(BitgetClient):
         subtitle = message["subtitle"]
         rest_message = message["rest_message"]
 
-        # Get other values
-        positions = await self.get_positions()
-        future_assets_ps = await self.get_future_possitions()
+        try:
+            # Get other values
+            positions = await self.get_positions()
+            future_assets_ps = await self.get_future_possitions()
 
-        # Calculate required values
-        usdt_used = sum(float(tot['marginSize']) for tot in positions['data'])
-        total_assets = float(future_assets_ps['data'][0]['usdtEquity'])
-        available = total_assets - usdt_used
+            # Calculate required values
+            usdt_used = sum(float(tot['marginSize']) for tot in positions['data'])
+            total_assets = float(future_assets_ps['data'][0]['usdtEquity'])
+            available = total_assets - usdt_used
+        except TypeError:
+            total_assets = None
+            usdt_used = None
+            available = None        
 
         message_html = f"""
             <html>
@@ -233,7 +238,7 @@ class EmailSender(BitgetClient):
                                 <li>Stay informed about market trends.</li>
                                 <li>Consider diversifying your investments.</li>
                             </ul>
-                            <p>For more detailed advice, please check out the <a href="investing.com/economic-calendar/" style="color: #FFA500; text-decoration: none;">economic calendar</a>.</p>
+                            <p>For more detailed advice, please check out the <a href="https://www.investing.com/economic-calendar/" style="color: #FFA500; text-decoration: none;">economic calendar</a>.</p>
                         </section>
                         <footer style="margin-top: 20px; padding-top: 10px; border-top: 1px solid #ddd; text-align: center;">
                             <p>Thank you for being a valued member of our community.</p>
@@ -242,13 +247,48 @@ class EmailSender(BitgetClient):
                     </main>
                 </body>
             </html>
-            """
+        """ if total_assets is not None and usdt_used is not None and available is not None else f"""
+            <html>
+                <body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6; background-color: #f9f9f9; margin: 0; padding: 0;">
+                    <header style="background: #FFA500; color: white; padding: 20px 0; text-align: center;">
+                        <h1 style="margin: 0; font-size: 24px;">Crypto Project - Advisory Notice</h1>
+                    </header>
+                    <main style="padding: 20px;">
+                        <section style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                            <h2 style="color: #FFA500; margin-top: 0;">{headline.upper()}</h2>
+                            <h3 style="color: #333; margin-top: 0;">{subtitle}</h3>
+                            <p>{rest_message}</p>
+                        </section>
+                        <section style="margin-top: 20px;">
+                            <h2>Allow our IP to your Bitget API configuration!</h2>
+                            <img src="https://travel360-images-handle.s3.eu-north-1.amazonaws.com/images/image_example.jpg" alt="Italian Trulli" style="width: 50%; height: auto;">
+                            <p>Our IP address is <b>18.227.161.231</b></p>
+                        </section>
+                        <section style="margin-top: 20px;">
+                            <h2>Actions to Consider</h2>
+                            <ul style="padding-left: 20px;">
+                                <li>Review your current portfolio.</li>
+                                <li>Stay informed about market trends.</li>
+                                <li>Consider diversifying your investments.</li>
+                            </ul>
+                            <p>For more detailed advice, please check out the <a href="https://www.investing.com/economic-calendar/" style="color: #FFA500; text-decoration: none;">economic calendar</a>.</p>
+                        </section>
+                        <footer style="margin-top: 20px; padding-top: 10px; border-top: 1px solid #ddd; text-align: center;">
+                            <p>Thank you for being a valued member of our community.</p>
+                            <p style="font-size: 0.9em;">&copy; 2024 Crypto Project. All rights reserved.</p>
+                        </footer>
+                    </main>
+                </body>
+            </html>
+        """
         self.send_email(receiver_email, subject, message_html)
 
+
 # Example usage:
+'/home/mrpau/Desktop/Secret_Project/other_layers/api_masternode/schedule_taks/credentials/credentials.json'
 email_sender = EmailSender(
-    token_path='/home/ubuntu/Bitget_API/bitget_proxy_api/schedule_taks/credentials/emailtoken.json',
-    creds_path='/home/ubuntu/Bitget_API/bitget_proxy_api/schedule_taks/credentials/credentials.json',
+    token_path='/home/mrpau/Desktop/Secret_Project/other_layers/api_masternode/schedule_taks/credentials/emailtoken.json',
+    creds_path='/home/mrpau/Desktop/Secret_Project/other_layers/api_masternode/schedule_taks/credentials/credentials.json',
     sender_email='devtravel36o@gmail.com'
 )
 
