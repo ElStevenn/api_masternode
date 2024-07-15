@@ -193,7 +193,7 @@ async def register_user(request: Request, request_boddy: schemas.RegisterUser):
 async def login_user(request_boddy: schemas.LoginUser):
     return {"status":"sucess", "response": "under construction"}
 
-@app.post("/user_session/{username}", tags=["User Session"])
+@app.post("/user_session/{user_id}", tags=["User Session"])
 async def logout_user(username: str):
     """Send user session as well as its username, email and subscribed modules"""
 
