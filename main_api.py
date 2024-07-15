@@ -1,7 +1,8 @@
-from fastapi import FastAPI, Security, HTTPException, status, Depends
+from fastapi import FastAPI, Security, HTTPException, status, Depends, Request
 from fastapi.security import APIKeyHeader
 from bitget import BitgetClient
 from schedule_taks.email_sender import EmailSender
+from services.orm import crud
 from typing import Literal, Optional
 import uvicorn, asyncio, json
 import schemas
@@ -14,7 +15,8 @@ email_sender = EmailSender(
     creds_path='/home/ubuntu/Bitget_API/bitget_proxy_api/schedule_taks/credentials/credentials.json',
     sender_email='devtravel36o@gmail.com'
 )
-api_key_header = APIKeyHeader(name="api-key")
+
+api_key_header = APIKeyHeader(name="password")
 
 def get_user(api_key_header: str = Security(api_key_header)):
     if api_key_header == "mierda69":
@@ -173,7 +175,37 @@ async def send_email(request_boddy: schemas.EmailBody):
 async def fear_greed_note(request_boddy: schemas.fear_greed, user: bool = Depends(get_user)):
     return {"response": "under construction"}
 
+@app.post("/register_user", tags=["User Session"])
+async def register_user(request: Request, request_boddy: schemas.RegisterUser):
+    client_ip = request.client.host
+    # Create new user in the database
+    result = await crud.create_new_user(
+        username=request_boddy.username, 
+        password=request_boddy.password, 
+        email=request_boddy.email,
+        client_ip=client_ip
+    )
 
+    return result
+
+
+@app.post("/login_user", tags=["User Session"])
+async def login_user(request_boddy: schemas.LoginUser):
+    return {"status":"sucess", "response": "under construction"}
+
+@app.post("/user_session/{username}", tags=["User Session"])
+async def logout_user(username: str):
+    """Send user session as well as its username, email and subscribed modules"""
+
+    return {"status":"sucess", "response": "under construction"}
+
+@app.put("/logout/{username}", tags=["User Session"])
+async def logout_user(request: Request, username: str):
+    """End user session"""
+    cliet_ip = request.client.host
+
+
+    return {"status":"sucess", "response": "under construction"}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

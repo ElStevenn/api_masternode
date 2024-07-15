@@ -104,6 +104,10 @@ class EmailSender(BitgetClient):
         self.send_email(receiver_email, subject, message_html)
 
     def advise_email(self, receiver_email, subject, advice):
+
+
+
+        
         message_html = f"""
         <html>
             <body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
@@ -262,7 +266,7 @@ class EmailSender(BitgetClient):
                         <section style="margin-top: 20px;">
                             <h2>Allow our IP to your Bitget API configuration!</h2>
                             <img src="https://travel360-images-handle.s3.eu-north-1.amazonaws.com/images/image_example.jpg" alt="Italian Trulli" style="width: 50%; height: auto;">
-                            <p>Our IP address is <b>18.227.161.231</b></p>
+                            <p>Our IP address is <b>{"18.227.161.231"}</b></p>
                         </section>
                         <section style="margin-top: 20px;">
                             <h2>Actions to Consider</h2>

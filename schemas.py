@@ -39,3 +39,14 @@ class EmailBody(BaseModel):
     subject: str
     type: Literal["normal", "advise", "recommendation", "alert", "notification"] = "normal"
     message: Union[SimpleMessage, StructuredMessage, RecommendationMessage] = StructuredMessage
+
+# USER SCHEMA
+class UserBase(BaseModel):
+    username: str
+
+class RegisterUser(UserBase):
+    email: EmailStr
+    password: str
+
+class LoginUser(UserBase):
+    password: str 
