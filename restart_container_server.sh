@@ -3,7 +3,6 @@
 # Constants
 container_name="bitget_api_v4"
 port=8000
-print_logs=false
 always_restart="yes" # -v: 'yes' | 'no'
 
 # Stop and remove container
@@ -36,8 +35,6 @@ if [[ $input != "y" ]] | [[ $always_restart == "yes" ]]; then
 
     echo "Container running in http://${host}:{$port}" 
 
-    if $print_logs; then
-        docker logs -f $container_name
 
 
 fi
