@@ -183,6 +183,7 @@ async def register_user(request: Request, request_boddy: schemas.RegisterUser):
         username=request_boddy.username, 
         password=request_boddy.password, 
         email=request_boddy.email,
+        country=request_boddy.country,
         client_ip=client_ip
     )
 
@@ -190,7 +191,14 @@ async def register_user(request: Request, request_boddy: schemas.RegisterUser):
 
 
 @app.post("/login_user", tags=["User Session"])
-async def login_user(request_boddy: schemas.LoginUser):
+async def login_user(request: Request, request_boddy: schemas.LoginUser):
+    client_ip = request.client.host
+    result = await crud.login_user(
+        username=request_boddy.username,
+        password=request_boddy.password
+    )
+
+
     return {"status":"sucess", "response": "under construction"}
 
 @app.post("/user_session/{user_id}", tags=["User Session"])
@@ -199,11 +207,11 @@ async def logout_user(username: str):
 
     return {"status":"sucess", "response": "under construction"}
 
-@app.put("/logout/{username}", tags=["User Session"])
-async def logout_user(request: Request, username: str):
+@app.put("/logout/{user_id}", tags=["User Session"])
+async def logout_user(request: Request, user_id: str):
     """End user session"""
     cliet_ip = request.client.host
-
+    await crud.logout_user(user_id, cliet_ip)
 
     return {"status":"sucess", "response": "under construction"}
 

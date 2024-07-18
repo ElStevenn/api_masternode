@@ -47,6 +47,7 @@ class UserBase(BaseModel):
 class RegisterUser(UserBase):
     email: EmailStr
     password: str
+    country: str
 
 class LoginUser(UserBase):
     password: str 

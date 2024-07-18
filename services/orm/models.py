@@ -12,9 +12,10 @@ class User(Base):
     __tablename__ = "user"
 
     id: Mapped[UUID] = mapped_column(pgUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    username: Mapped[str] = mapped_column(String(40), nullable=False)
+    username: Mapped[str] = mapped_column(String(40), nullable=False, unique=True)
     password: Mapped[str] = mapped_column(String(256), nullable=False)
-    email: Mapped[str] = mapped_column(String(40), nullable=False)
+    email: Mapped[str] = mapped_column(String(40), nullable=False, unique=True)
+    country: Mapped[str] = mapped_column(String(2), nullable=False)
     configuration: Mapped[dict] = mapped_column(JSON)
     session_ips: Mapped[list[str]] = mapped_column(JSON, nullable=False)
 
