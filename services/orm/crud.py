@@ -3,7 +3,7 @@ from .models import *
 from sqlalchemy import select, update, insert, delete
 from functools import wraps
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, DBAPIError
 import asyncio
 
 
@@ -26,40 +26,48 @@ def db_connection(func):
 # USER WHOLE CRUD
 
 @db_connection
-async def create_new_user(session: AsyncSession, username, password, email, country, client_ip):
-            try:
-                new_user_conf = {
-                    # Add configuration details here
-                }
+async def create_new_user(session: AsyncSession, username: str, password: str, email: str, country: str, client_ip: str):
+    try:
+        new_user_conf = {
+                "cvi": {},
+                "economic_calendar": {}
+            }
 
-                new_user = User(
-                    username=username,
-                    password=password,
-                    country=country,
-                    email=email,
-                    configuration=new_user_conf,
-                    session_ips=f'[{client_ip}]'
-                )
-                session.add(new_user)
-                await session.flush()
+        new_user = User(
+                username=username,
+                password=password,
+                country=country,
+                email=email,
+                configuration=new_user_conf,
+                session_ips=[client_ip]  # Initialize session_ips as a list of strings
+            )
+        session.add(new_user)
+        await session.flush()
 
-                return {
-                    "status":"sucess",
-                    "user_data": {
-                        "user_id": new_user.id,
-                        "username": new_user.username,
-                        "email": new_user.email
-                    }
-                }
-            
-            except IntegrityError as e:
+        # Manually query the new user's ID before committing the transaction
+        user_id_query = await session.execute(select(User.id).where(User.email == email))
+        user_id = user_id_query.scalar()
+
+        await session.commit()
+
+        return {
+            "status": "success",
+            "user_data": {
+                "user_id": user_id,
+                "username": username,
+                "email": email
+            }
+        }
+
+    except IntegrityError as e:
                 await session.rollback()
                 if "UNIQUE constraint failed: user.username" in str(e):
                     return {"status": "error", "error": "Username already exists"}
                 elif "UNIQUE constraint failed: user.email" in str(e):
                     return {"status": "error", "error": "Email already exists"}
                 else:
-                    return {"status": "error", "error": "An error occurred while creating the user"}
+                    return {"status": "error", "error": f"An error ocurred: {e}"}
+
               
 
 @db_connection
@@ -70,18 +78,19 @@ async def logout_user(session: AsyncSession, user_id: str, user_ip: str):
 
     # Remove the IP
     user_ips = list(user.session_ips)
-    user_ips.remove(user_ip)
+    if user_id in user_ips:
+        user_ips.remove(user_ip)
 
-    # Update result in the db
-    await session.execute(
-        update(User).
-        where(User.id == user_id).
-        values(session_ips=user_ips)
-    )
-
+        # Update result in the db
+        await session.execute(
+            update(User).
+            where(User.id == user_id).
+            values(session_ips=user_ips)
+        )
+        return True
+    else:
+        return None
     
-
-
 
 async def update_user(user_id: str, new_username: str = None, new_email: str = None):
     async with AsyncSession(async_engine) as session:
@@ -90,18 +99,19 @@ async def update_user(user_id: str, new_username: str = None, new_email: str = N
 
 @db_connection
 async def login_user(session: AsyncSession, username: str, password: str, client_ip: str):
-            try:
-                result = await session.execute(select(User).where(User.username == username, User.password == password))
+        try:
+            result = await session.execute(select(User).where(User.username == username, User.password == password))
 
-                user = result.scalar_one_or_none()
+            user = result.scalar_one_or_none()
+            if user:
                 print(user.id)
 
                 # If user, add new session ips
                 if user:
-                    user_ips = list(user.session_ips)
+                    user_ips = user.session_ips if user.session_ips else []
                     if client_ip not in user_ips:
                         user_ips.append(client_ip)
-                    
+
                     stmt = (
                         update(User).
                         where(User.id == user.id).
@@ -114,25 +124,46 @@ async def login_user(session: AsyncSession, username: str, password: str, client
                 # Add new operations here if needed
 
                 return {
-                    "status":"sucess",
-                    "user_data":{
+                    "status": "success",
+                    "user_data": {
                         "user_id": str(user.id),
                         "username": user.username,
                         "email": user.email,
                         "configuration": user.configuration
                     }
                 }
-            except OSError:
+            else:
                 return {
                     "status": "error",
-                    "error": "An error occurred while logging in the user"
+                    "error": "User does not exsit in the database"
                 }
-            
+        except OSError:
+            return {
+                "status": "error",
+                "error": "An error occurred while logging in the user"
+            }
+        
 @db_connection
 async def get_user(session: AsyncSession, user_id: str):
-            selected_user = await session.get(User, user_id)
-            return selected_user
-
+    try:
+        result = await session.execute(select(User).where(User.id == user_id))
+        selected_user = result.scalar_one_or_none()
+        
+        return {
+            "status": "success",
+            "user_data": {
+                "user_id": selected_user.id,
+                "username": selected_user.username,
+                "email": selected_user.email,
+                "configuration": dict(selected_user.configuration)
+            }
+        }
+    except DBAPIError:
+        return {
+            "status": "error",
+            "error": f"User id {user_id} does not exsit in the database"
+        }
+    
 async def get_user_email(email: str):
     async with AsyncSession(async_engine) as session:
         async with session.begin():

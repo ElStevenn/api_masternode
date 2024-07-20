@@ -171,9 +171,29 @@ async def send_email(request_boddy: schemas.EmailBody):
 
     return {"response": "Email has been sent!"}
 
-@app.post("/fear_greed_notifier", tags=["Institucional Orders"])
-async def fear_greed_note(request_boddy: schemas.fear_greed, user: bool = Depends(get_user)):
+@app.post("/fear_and_greed/subscribe", tags=["Subscriptions"])
+async def fear_greed_note(request_boddy: schemas.Fear_greedSubscribe, user: bool = Depends(get_user)):
+
+    # Send request to subscribe to pasive node
+
     return {"response": "under construction"}
+
+@app.post("/fear_and_greed/unsubscribe", tags=["Subscriptions"])
+async def fear_greed_note(request_boddy: schemas.Fear_greedUnSubscribe, user: bool = Depends(get_user)):
+
+    # Send request to subscribe to pasive node
+
+    return {"response": "under construction"}
+
+@app.post("/economic_calendar/subscribe", tags=["Subscriptions"])
+async def subscribe_to_economic_calendar(user: bool = Depends(get_user)):
+    return {"response": "under construction"}
+
+@app.post("/economic_calendar/unsubscribe", tags=["Subscriptions"])
+async def unsubscribe_to_economic_calendar(user: bool = Depends(get_user)):
+    return {"response": "under construction"}
+
+# USER SESSION
 
 @app.post("/register_user", tags=["User Session"])
 async def register_user(request: Request, request_boddy: schemas.RegisterUser):
@@ -195,25 +215,29 @@ async def login_user(request: Request, request_boddy: schemas.LoginUser):
     client_ip = request.client.host
     result = await crud.login_user(
         username=request_boddy.username,
-        password=request_boddy.password
+        password=request_boddy.password,
+        client_ip=client_ip
     )
 
-
-    return {"status":"sucess", "response": "under construction"}
+    return result
 
 @app.post("/user_session/{user_id}", tags=["User Session"])
-async def logout_user(username: str):
+async def logout_user(user_id: str):
     """Send user session as well as its username, email and subscribed modules"""
+    user_session = await crud.get_user(user_id)
 
-    return {"status":"sucess", "response": "under construction"}
+    return user_session
 
 @app.put("/logout/{user_id}", tags=["User Session"])
 async def logout_user(request: Request, user_id: str):
     """End user session"""
     cliet_ip = request.client.host
-    await crud.logout_user(user_id, cliet_ip)
+    response = await crud.logout_user(user_id, cliet_ip)
+    if response:
+        return {"status":"sucess", "response": "User logout properly"}
+    else:
+        return {"status": "sucess", "response": "The ip does not exist in the db, so nothing has happenedd"}
 
-    return {"status":"sucess", "response": "under construction"}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

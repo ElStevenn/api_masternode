@@ -15,7 +15,7 @@ class User(Base):
     username: Mapped[str] = mapped_column(String(40), nullable=False, unique=True)
     password: Mapped[str] = mapped_column(String(256), nullable=False)
     email: Mapped[str] = mapped_column(String(40), nullable=False, unique=True)
-    country: Mapped[str] = mapped_column(String(2), nullable=False)
+    country: Mapped[str] = mapped_column(String(100), nullable=False)
     configuration: Mapped[dict] = mapped_column(JSON)
     session_ips: Mapped[list[str]] = mapped_column(JSON, nullable=False)
 

@@ -8,9 +8,14 @@ class Order(BaseModel):
     price: Optional[str] = None
     leverage: Optional[int] = 5
 
-class fear_greed(BaseModel):
+class Fear_greedSubscribe(BaseModel):
     email_sender: str
-    option2: str
+    user_id: str
+    notification_level: Literal[1,2,3] = 1
+
+class Fear_greedUnSubscribe(BaseModel):
+    user_id: str
+
 
 class Options_totalAmount(BaseModel):
     coin: Optional[str] = "USDT"
@@ -51,3 +56,7 @@ class RegisterUser(UserBase):
 
 class LoginUser(UserBase):
     password: str 
+
+
+# SUBSCRIPTIONS
+
