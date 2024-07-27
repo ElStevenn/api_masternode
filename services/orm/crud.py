@@ -17,7 +17,7 @@ def db_connection(func):
     
                     return result
                 except OSError:
-                    return {"status": "error", "error": "DB connection in the server does not work"}
+                    return {"status": "error", "error": "DB connection in the server does not work, maybe the container is not running"}
                 except Exception as e:
                     print("An error occurred:", e)
                     raise
@@ -174,10 +174,44 @@ async def get_user_email(email: str):
             return user
 
 
+@db_connection
+async def delete_user(session: AsyncSession, user_id: str):
+    # Modify this over the time!
+    try:
+        stmt = select(User).where(User.id == user_id)
+        result = await session.execute(stmt)
+        user = result.scalars().first()
+
+        if user:
+            await session.delete(user)
+            await session.flush()
+            return {
+                "status": "success",
+                "message": f"user {user_id} was successfully deleted"
+            }
+        else:
+            return {
+                "status": "error",
+                "message": f"User {user_id} does not exist in the database"
+            }
+    except DBAPIError:
+        return {
+            "status": "error",
+            "message": f"User {user_id} does not exist in the database"
+        }
+
+@db_connection
+async def add_new_error(session: AsyncSession, subject: str, text: str):
+    """Add new error log"""
+    new_error = Errors_Logs(subject=subject, text=text)
+    session.add(new_error)
+    await session.flush()
+
+
 async def main_proofs():
     # Create new user proff
     # await create_new_user("mrpau", "123456", "XXXXXXXXXXXXXXX", "BR", "127.0.0.1")
-    result = await login_user("mrpau", "123456", "127.0.0.1")
+    result = await add_new_error("error log subject", "error log large")
     print(result)
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@ from bitget import BitgetClient
 from schedule_taks.email_sender import EmailSender
 from services.orm import crud
 from typing import Literal, Optional
-import uvicorn, asyncio, json
+import uvicorn, asyncio, json, datetime
 import schemas
 
 # Clients
@@ -167,9 +167,38 @@ async def send_email(request_boddy: schemas.EmailBody):
     elif request_boddy.type == "alert":
         pass
     elif request_boddy.type == "recommendation":
-        pass
+        message_body = {
+            "crypto_name": request_boddy.message.crypto_name,
+            "headline": request_boddy.message.headline,
+            "subtitle": request_boddy.message.subtitle,
+            "details": request_boddy.message.details,
+            "investment_advice": request_boddy.message.investment_advice
+        }
 
+        await email_sender.recommendation_email(
+            receiver_email=request_boddy.receiver_email,
+            subject=request_boddy.subject,
+            message_body=message_body
+        )
     return {"response": "Email has been sent!"}
+
+@app.post("/notificate_node_issue", tags=["Other Services"], description="Report an issue to the developer. An email will be sended")
+async def notificate_issue_to_developer(request_boddy: schemas.IssueProblem):
+    
+    today = datetime.datetime.today()
+    subject = f"New error type {request_boddy.error_type} the day {today.strftime("%d/%m/%Y")} at {today.strftime("%H:%M")}"
+
+    # Send email to notify the error
+    asyncio.create_task(email_sender.error_email(subject=subject, message=request_boddy.description))
+
+    # Add Error Log into the db
+    result = await crud.add_new_error(subject=subject, text=request_boddy.description)
+
+    if result['status'] == "error":
+        return {"status": "error", "message": f"The email has been sent, but the log hasn't been sent", "type": "5000"}
+
+    return {"status":"success", "message": "The error has been notificated!"}
+
 
 @app.post("/fear_and_greed/subscribe", tags=["Subscriptions"])
 async def fear_greed_note(request_boddy: schemas.Fear_greedSubscribe, user: bool = Depends(get_user)):
@@ -238,6 +267,12 @@ async def logout_user(request: Request, user_id: str):
     else:
         return {"status": "sucess", "response": "The ip does not exist in the db, so nothing has happenedd"}
 
+@app.delete("/delete_user/{user_id}", tags=["User Session"])
+async def delete_user_permanently(user_id):
+    "Remove and all its data from the db"
+    response = await crud.delete_user(user_id)
+
+    return response
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

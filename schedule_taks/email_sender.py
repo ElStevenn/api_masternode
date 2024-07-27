@@ -140,25 +140,25 @@ class EmailSender(BitgetClient):
         subtitle = recommendation["subtitle"]
         details = recommendation["details"]
         investment_advice = recommendation["investment_advice"]
+        image_url = recommendation["image_url"]
 
         message_html = f"""
         <html>
             <body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6; background-color: #f9f9f9; margin: 0; padding: 0;">
                 <header style="background: #008CBA; color: white; padding: 20px 0; text-align: center;">
-                    <h1 style="margin: 0; font-size: 24px;">Crypto Project - Recommendation</h1>
+                    <h1 style="margin: 0; font-size: 24px;">{headline}</h1>
                 </header>
                 <main style="padding: 20px;">
                     <section style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
-                        <h2 style="color: #008CBA; margin-top: 0;">{headline}</h2>
-                        <h3 style="color: #333; margin-top: 0;">{subtitle}</h3>
-                        <p>{details}</p>
+                        <h2 style="color: #008CBA; font-size: 22px; margin-top: 0;">{subtitle}</h2>
+                        <p style="color: #333; font-size: 18px; margin-top: 0;">{details}</p>
                     </section>
                     <section style="margin-top: 20px;">
                         <h2>Investment Advice for {crypto_name}</h2>
-                        <ul style="padding-left: 20px;">
+                        <ul style="padding-left: 20px; margin-top: 0;">
                             {"".join([f"<li>{item}</li>" for item in investment_advice])}
                         </ul>
-                        <p>Based on our recent analysis, we suggest considering the above recommendations to enhance your portfolio.</p>
+                        <p style="margin-top: 20px;">Based on our recent analysis, we suggest considering the above recommendations to enhance your portfolio.</p>
                         <p>For a more detailed report, please visit our <a href="#" style="color: #008CBA; text-decoration: none;">recommendations page</a> or contact our support team.</p>
                     </section>
                     <footer style="margin-top: 20px; padding-top: 10px; border-top: 1px solid #ddd; text-align: center;">
@@ -170,6 +170,7 @@ class EmailSender(BitgetClient):
         </html>
         """
         self.send_email(receiver_email, subject, message_html)
+
 
     def alert_email(self, receiver_email, subject, alert):
         message_html = f"""
@@ -198,95 +199,117 @@ class EmailSender(BitgetClient):
         """
         self.send_email(receiver_email, subject, message_html)
 
-    async def advise_email(self, receiver_email, subject, message: dict):
-        headline = message["headline"]
-        subtitle = message["subtitle"]
-        rest_message = message["rest_message"]
+        async def advise_emai(self, receiver_email, subject, message: dict):
+            headline = message["headline"]
+            subtitle = message["subtitle"]
+            rest_message = message["rest_message"]
 
-        try:
-            # Get other values
-            positions = await self.get_positions()
-            future_assets_ps = await self.get_future_possitions()
+            try:
+                # Get other values
+                positions = await self.get_positions()
+                future_assets_ps = await self.get_future_possitions()
 
-            # Calculate required values
-            usdt_used = sum(float(tot['marginSize']) for tot in positions['data'])
-            total_assets = float(future_assets_ps['data'][0]['usdtEquity'])
-            available = total_assets - usdt_used
-        except TypeError:
-            total_assets = None
-            usdt_used = None
-            available = None        
+                # Calculate required values
+                usdt_used = sum(float(tot['marginSize']) for tot in positions['data'])
+                total_assets = float(future_assets_ps['data'][0]['usdtEquity'])
+                available = total_assets - usdt_used
+            except TypeError:
+                total_assets = None
+                usdt_used = None
+                available = None        
 
+            message_html = f"""
+                <html>
+                    <body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6; background-color: #f9f9f9; margin: 0; padding: 0;">
+                        <header style="background: #FFA500; color: white; padding: 20px 0; text-align: center;">
+                            <h1 style="margin: 0; font-size: 24px;">Crypto Project - Advisory Notice</h1>
+                        </header>
+                        <main style="padding: 20px;">
+                            <section style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                                <h2 style="color: #FFA500; margin-top: 0;">{headline.upper()}</h2>
+                                <h3 style="color: #333; margin-top: 0;">{subtitle}</h3>
+                                <p>{rest_message}</p>
+                            </section>
+                            <section style="margin-top: 20px;">
+                                <h2>Financial Overview</h2>
+                                <p>Total Assets: <strong>${total_assets:.2f} USDT</strong></p>
+                                <p>USDT Used: <strong>${usdt_used:.2f} USDT</strong></p>
+                                <p>Available Balance: <strong>${available:.2f} USDT</strong></p>
+                            </section>
+                            <section style="margin-top: 20px;">
+                                <h2>Actions to Consider</h2>
+                                <ul style="padding-left: 20px;">
+                                    <li>Review your current portfolio.</li>
+                                    <li>Stay informed about market trends.</li>
+                                    <li>Consider diversifying your investments.</li>
+                                </ul>
+                                <p>For more detailed advice, please check out the <a href="https://www.investing.com/economic-calendar/" style="color: #FFA500; text-decoration: none;">economic calendar</a>.</p>
+                            </section>
+                            <footer style="margin-top: 20px; padding-top: 10px; border-top: 1px solid #ddd; text-align: center;">
+                                <p>Thank you for being a valued member of our community.</p>
+                                <p style="font-size: 0.9em;">&copy; 2024 Crypto Project. All rights reserved.</p>
+                            </footer>
+                        </main>
+                    </body>
+                </html>
+            """ if total_assets is not None and usdt_used is not None and available is not None else f"""
+                <html>
+                    <body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6; background-color: #f9f9f9; margin: 0; padding: 0;">
+                        <header style="background: #FFA500; color: white; padding: 20px 0; text-align: center;">
+                            <h1 style="margin: 0; font-size: 24px;">Crypto Project - Advisory Notice</h1>
+                        </header>
+                        <main style="padding: 20px;">
+                            <section style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                                <h2 style="color: #FFA500; margin-top: 0;">{headline.upper()}</h2>
+                                <h3 style="color: #333; margin-top: 0;">{subtitle}</h3>
+                                <p>{rest_message}</p>
+                            </section>
+                            <section style="margin-top: 20px;">
+                                <h2>Allow our IP to your Bitget API configuration!</h2>
+                                <img src="https://travel360-images-handle.s3.eu-north-1.amazonaws.com/images/image_example.jpg" alt="Italian Trulli" style="width: 50%; height: auto;">
+                                <p>Our IP address is <b>{"18.227.161.231"}</b></p>
+                            </section>
+                            <section style="margin-top: 20px;">
+                                <h2>Actions to Consider</h2>
+                                <ul style="padding-left: 20px;">
+                                    <li>Review your current portfolio.</li>
+                                    <li>Stay informed about market trends.</li>
+                                    <li>Consider diversifying your investments.</li>
+                                </ul>
+                                <p>For more detailed advice, please check out the <a href="https://www.investing.com/economic-calendar/" style="color: #FFA500; text-decoration: none;">economic calendar</a>.</p>
+                            </section>
+                            <footer style="margin-top: 20px; padding-top: 10px; border-top: 1px solid #ddd; text-align: center;">
+                                <p>Thank you for being a valued member of our community.</p>
+                                <p style="font-size: 0.9em;">&copy; 2024 Crypto Project. All rights reserved.</p>
+                            </footer>
+                        </main>
+                    </body>
+                </html>
+            """
+            self.send_email(receiver_email, subject, message_html)
+
+    async def error_email(self, subject, message):
+        receiver_email = "paumat17@gmail.com"
         message_html = f"""
-            <html>
-                <body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6; background-color: #f9f9f9; margin: 0; padding: 0;">
-                    <header style="background: #FFA500; color: white; padding: 20px 0; text-align: center;">
-                        <h1 style="margin: 0; font-size: 24px;">Crypto Project - Advisory Notice</h1>
-                    </header>
-                    <main style="padding: 20px;">
-                        <section style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
-                            <h2 style="color: #FFA500; margin-top: 0;">{headline.upper()}</h2>
-                            <h3 style="color: #333; margin-top: 0;">{subtitle}</h3>
-                            <p>{rest_message}</p>
-                        </section>
-                        <section style="margin-top: 20px;">
-                            <h2>Financial Overview</h2>
-                            <p>Total Assets: <strong>${total_assets:.2f} USDT</strong></p>
-                            <p>USDT Used: <strong>${usdt_used:.2f} USDT</strong></p>
-                            <p>Available Balance: <strong>${available:.2f} USDT</strong></p>
-                        </section>
-                        <section style="margin-top: 20px;">
-                            <h2>Actions to Consider</h2>
-                            <ul style="padding-left: 20px;">
-                                <li>Review your current portfolio.</li>
-                                <li>Stay informed about market trends.</li>
-                                <li>Consider diversifying your investments.</li>
-                            </ul>
-                            <p>For more detailed advice, please check out the <a href="https://www.investing.com/economic-calendar/" style="color: #FFA500; text-decoration: none;">economic calendar</a>.</p>
-                        </section>
-                        <footer style="margin-top: 20px; padding-top: 10px; border-top: 1px solid #ddd; text-align: center;">
-                            <p>Thank you for being a valued member of our community.</p>
-                            <p style="font-size: 0.9em;">&copy; 2024 Crypto Project. All rights reserved.</p>
-                        </footer>
-                    </main>
-                </body>
-            </html>
-        """ if total_assets is not None and usdt_used is not None and available is not None else f"""
-            <html>
-                <body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6; background-color: #f9f9f9; margin: 0; padding: 0;">
-                    <header style="background: #FFA500; color: white; padding: 20px 0; text-align: center;">
-                        <h1 style="margin: 0; font-size: 24px;">Crypto Project - Advisory Notice</h1>
-                    </header>
-                    <main style="padding: 20px;">
-                        <section style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
-                            <h2 style="color: #FFA500; margin-top: 0;">{headline.upper()}</h2>
-                            <h3 style="color: #333; margin-top: 0;">{subtitle}</h3>
-                            <p>{rest_message}</p>
-                        </section>
-                        <section style="margin-top: 20px;">
-                            <h2>Allow our IP to your Bitget API configuration!</h2>
-                            <img src="https://travel360-images-handle.s3.eu-north-1.amazonaws.com/images/image_example.jpg" alt="Italian Trulli" style="width: 50%; height: auto;">
-                            <p>Our IP address is <b>{"18.227.161.231"}</b></p>
-                        </section>
-                        <section style="margin-top: 20px;">
-                            <h2>Actions to Consider</h2>
-                            <ul style="padding-left: 20px;">
-                                <li>Review your current portfolio.</li>
-                                <li>Stay informed about market trends.</li>
-                                <li>Consider diversifying your investments.</li>
-                            </ul>
-                            <p>For more detailed advice, please check out the <a href="https://www.investing.com/economic-calendar/" style="color: #FFA500; text-decoration: none;">economic calendar</a>.</p>
-                        </section>
-                        <footer style="margin-top: 20px; padding-top: 10px; border-top: 1px solid #ddd; text-align: center;">
-                            <p>Thank you for being a valued member of our community.</p>
-                            <p style="font-size: 0.9em;">&copy; 2024 Crypto Project. All rights reserved.</p>
-                        </footer>
-                    </main>
-                </body>
-            </html>
+        <html>
+            <body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6; background-color: #f9f9f9; margin: 0; padding: 0;">
+                <header style="background: #d9534f; color: white; padding: 30px 0; text-align: center;">
+                    <h1 style="margin: 0; font-size: 28px;">Error Notification</h1>
+                </header>
+                <main style="padding: 30px;">
+                    <section style="background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);">
+                        <h2 style="color: #d9534f; font-size: 24px; margin-top: 0;">{subject}</h2>
+                        <p style="color: #333; font-size: 18px; margin-top: 10px;">{message}</p>
+                    </section>
+                    <footer style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center;">
+                        <p style="font-size: 16px;">Thank you for your attention to this matter.</p>
+                        <p style="font-size: 14px;">&copy; 2024 Your Company. All rights reserved.</p>
+                    </footer>
+                </main>
+            </body>
+        </html>
         """
         self.send_email(receiver_email, subject, message_html)
-
 
 # Example usage:
 '/home/mrpau/Desktop/Secret_Project/other_layers/api_masternode/schedule_taks/credentials/credentials.json'
@@ -297,8 +320,15 @@ email_sender = EmailSender(
 )
 
 async def main_test():
-    message = "Normal image lololol"
-    email_sender.normal_email("paumat17@gmail.com", "Advisory Notice", message)
+    message_body = {
+            "crypto_name": "FEAR AND GREED",
+            "headline": "Fear and Greed Notification",
+            "subtitle": "Maybe it's time to invest in bitcoin",
+            "details": "Bitcoin it's falling for 5 months, and its price it's in a good point to buy, but keep in mind that it hasn't fallen a 70% to consider invest",
+            "investment_advice": []
+        }
+    
+    await email_sender.recommendation_email("paumat17@gmail.com", "Fear and Gredd today's notification", message_body)
 
 if __name__ == "__main__":
     asyncio.run(main_test())

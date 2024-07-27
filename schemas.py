@@ -32,7 +32,8 @@ class RecommendationMessage(BaseModel):
     headline: str
     subtitle: str
     details: str
-    investment_advice: List[str]
+    investment_advice: List[str] = []
+    images_url: Optional[List[str]] = []
 
 class StructuredMessage(BaseModel):
     headline: Optional[str] = None
@@ -44,6 +45,10 @@ class EmailBody(BaseModel):
     subject: str
     type: Literal["normal", "advise", "recommendation", "alert", "notification"] = "normal"
     message: Union[SimpleMessage, StructuredMessage, RecommendationMessage] = StructuredMessage
+
+class IssueProblem(BaseModel):
+    error_type: Literal["bug", "mistake", "missing", "other"] = "bug"
+    description: Optional[str] = None
 
 # USER SCHEMA
 class UserBase(BaseModel):
