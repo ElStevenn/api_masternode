@@ -8,7 +8,10 @@ from googleapiclient.discovery import build
 from pathlib import Path
 import base64, os
 import json, asyncio
+import sys
 from bitget import BitgetClient
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 class EmailSender(BitgetClient):
     def __init__(self, token_path, creds_path, sender_email):
@@ -22,7 +25,7 @@ class EmailSender(BitgetClient):
         creds = None
         # Check if the token file exists
      
-        with open("/home/mrpau/Desktop/Secret_Project/other_layers/api_masternode/schedule_taks/credentials/emailtoken.json", 'r') as token_file:
+        with open(os.path.join(os.getcwd(), "schedule_taks/credentials/emailtoken.json"), 'r') as token_file:
             creds = Credentials.from_authorized_user_info(json.load(token_file))
 
         # If there are no (valid) credentials available, prompt the user to authenticate.
@@ -312,10 +315,9 @@ class EmailSender(BitgetClient):
         self.send_email(receiver_email, subject, message_html)
 
 # Example usage:
-'/home/mrpau/Desktop/Secret_Project/other_layers/api_masternode/schedule_taks/credentials/credentials.json'
 email_sender = EmailSender(
-    token_path='/home/mrpau/Desktop/Secret_Project/other_layers/api_masternode/schedule_taks/credentials/emailtoken.json',
-    creds_path='/home/mrpau/Desktop/Secret_Project/other_layers/api_masternode/schedule_taks/credentials/credentials.json',
+    token_path=os.path.join(os.getcwd(), "schedule_taks/credentials/emailtoken.json"),
+    creds_path=os.path.join(os.getcwd(), "schedule_taks/credentials/credentials.json"), 
     sender_email='devtravel36o@gmail.com'
 )
 
