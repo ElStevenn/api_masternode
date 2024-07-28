@@ -142,51 +142,50 @@ async def close_order(symbol, request_boddy:schemas.CloseOrder, user: bool = Dep
 
 @app.post("/send_email", tags=["Other Services"])
 async def send_email(request_boddy: schemas.EmailBody):
-    try:
-        if isinstance(request_boddy.message, schemas.SimpleMessage):
-            if len(request_boddy.message.message) < 50:
-                message_body = {"headline": request_boddy.message.message, "subtitle": "", "rest_message": ""}
-            elif len(request_boddy.message.message) < 200:
-                message_body = {"headline": "", "subtitle": request_boddy.message.message, "rest_message": ""}
-            else:
-                message_body = {"headline": "", "subtitle": "", "rest_message": request_boddy.message.message}
 
-        elif isinstance(request_boddy.message, schemas.StructuredMessage):
-            message_body = {"headline": request_boddy.message.headline, "subtitle": request_boddy.message.subtitle, "rest_message": request_boddy.message.rest_message}
+    if isinstance(request_boddy.message, schemas.SimpleMessage):
+        if len(request_boddy.message.message) < 50:
+            message_body = {"headline": request_boddy.message.message, "subtitle": "", "rest_message": ""}
+        elif len(request_boddy.message.message) < 200:
+            message_body = {"headline": "", "subtitle": request_boddy.message.message, "rest_message": ""}
+        else:
+            message_body = {"headline": "", "subtitle": "", "rest_message": request_boddy.message.message}
 
-        if request_boddy.type == "advise":
-            await email_sender.advise_email(
-                receiver_email=request_boddy.receiver_email,
-                subject=request_boddy.subject,
-                message=message_body
-            )
-        elif request_boddy.type == "normal":
-            await email_sender.normal_email(
-                receiver_email=request_boddy.receiver_email,
-                subject=request_boddy.subject,
-                content=request_boddy.message.message
-            )
-        elif request_boddy.type == "notification":
-            pass
-        elif request_boddy.type == "alert":
-            pass
-        elif request_boddy.type == "recommendation":
-            message_body = {
-                "crypto_name": request_boddy.message.crypto_name,
-                "headline": request_boddy.message.headline,
-                "subtitle": request_boddy.message.subtitle,
-                "details": request_boddy.message.details,
-                "investment_advice": request_boddy.message.investment_advice
-            }
+    elif isinstance(request_boddy.message, schemas.StructuredMessage):
+        message_body = {"headline": request_boddy.message.headline, "subtitle": request_boddy.message.subtitle, "rest_message": request_boddy.message.rest_message}
 
-            await email_sender.recommendation_email(
-                receiver_email=request_boddy.receiver_email,
-                subject=request_boddy.subject,
-                message_body=message_body
-            )
-        return {"status":"success", "response": "Email has been sent!"}
-    except Exception as e:
-        return{"status": "error", "error": f"unexcepted internal error ocurred {e}"}
+    if request_boddy.type == "advise":
+        email_sender.advise_email(
+            receiver_email=request_boddy.receiver_email,
+            subject=request_boddy.subject,
+            message=message_body
+        )
+    elif request_boddy.type == "normal":
+        email_sender.normal_email(
+            receiver_email=request_boddy.receiver_email,
+            subject=request_boddy.subject,
+            content=request_boddy.message.message
+        )
+    elif request_boddy.type == "notification":
+        pass
+    elif request_boddy.type == "alert":
+        pass
+    elif request_boddy.type == "recommendation":
+        message_body = {
+            "crypto_name": request_boddy.message.crypto_name,
+            "headline": request_boddy.message.headline,
+            "subtitle": request_boddy.message.subtitle,
+            "details": request_boddy.message.details,
+            "investment_advice": request_boddy.message.investment_advice
+        }
+
+        await email_sender.recommendation_email(
+            receiver_email=request_boddy.receiver_email,
+            subject=request_boddy.subject,
+            message_body=message_body
+        )
+    return {"status":"success", "response": "Email has been sent!"}
+
 
 @app.post("/notificate_node_issue", tags=["Other Services"], description="Report an issue to the developer. An email will be sended")
 async def notificate_issue_to_developer(request_boddy: schemas.IssueProblem):
