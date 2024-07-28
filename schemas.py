@@ -44,7 +44,7 @@ class EmailBody(BaseModel):
     receiver_email: EmailStr
     subject: str
     type: Literal["normal", "advise", "recommendation", "alert", "notification"] = "normal"
-    message: Union[SimpleMessage, StructuredMessage, RecommendationMessage] = StructuredMessage
+    message: Union[SimpleMessage, StructuredMessage, RecommendationMessage] = RecommendationMessage
 
 class IssueProblem(BaseModel):
     error_type: Literal["bug", "mistake", "missing", "other"] = "bug"
