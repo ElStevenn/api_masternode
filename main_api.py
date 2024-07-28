@@ -176,7 +176,8 @@ async def send_email(request_boddy: schemas.EmailBody):
             "headline": request_boddy.message.headline,
             "subtitle": request_boddy.message.subtitle,
             "details": request_boddy.message.details,
-            "investment_advice": request_boddy.message.investment_advice
+            "investment_advice": request_boddy.message.investment_advice,
+            "image_url": request_boddy.message.images_url
         }
 
         await email_sender.recommendation_email(

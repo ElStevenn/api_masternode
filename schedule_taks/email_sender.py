@@ -137,13 +137,15 @@ class EmailSender(BitgetClient):
         """
         self.send_email(receiver_email, subject, message_html)
 
-    async def recommendation_email(self, receiver_email, subject, recommendation):
-        crypto_name = recommendation["crypto_name"]
-        headline = recommendation["headline"]
-        subtitle = recommendation["subtitle"]
-        details = recommendation["details"]
-        investment_advice = recommendation["investment_advice"]
-        image_url = recommendation["image_url"]
+    async def recommendation_email(self, receiver_email, subject, recommendation: dict):
+        crypto_name = recommendation.get("crypto_name", "")
+        headline = recommendation.get("headline", "")
+        subtitle = recommendation.get("subtitle", "")
+        details = recommendation.get("details", "")
+        investment_advice = recommendation.get("investment_advice", "")
+        image_url = recommendation.get("image_url", [])
+
+        image_html = f'<img src="{image_url}" alt="Image" style="max-width: 100%; height: auto; margin-top: 20px;">' if image_url else ''
 
         message_html = f"""
         <html>
@@ -155,6 +157,7 @@ class EmailSender(BitgetClient):
                     <section style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
                         <h2 style="color: #008CBA; font-size: 22px; margin-top: 0;">{subtitle}</h2>
                         <p style="color: #333; font-size: 18px; margin-top: 0;">{details}</p>
+                        {image_html}
                     </section>
                     <section style="margin-top: 20px;">
                         <h2>Investment Advice for {crypto_name}</h2>
@@ -173,6 +176,7 @@ class EmailSender(BitgetClient):
         </html>
         """
         self.send_email(receiver_email, subject, message_html)
+
 
 
     def alert_email(self, receiver_email, subject, alert):
