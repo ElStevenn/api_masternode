@@ -183,7 +183,7 @@ async def send_email(request_boddy: schemas.EmailBody):
         await email_sender.recommendation_email(
             receiver_email=request_boddy.receiver_email,
             subject=request_boddy.subject,
-            message_body=message_body
+            recommendation=message_body
         )
     return {"status":"success", "response": "Email has been sent!"}
 
