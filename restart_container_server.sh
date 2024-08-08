@@ -30,7 +30,7 @@ if [[ $input != "y" ]] | [[ $always_restart == "yes" ]]; then
 
     echo "----------------------------------------------------"
     echo "Container IP: $ip"
-    echo "Host Port: 8000"
+    echo "Host Port: 80"
     echo "Container Name: $container_name"
 
     echo "Container running in http://${host}:$port" 
