@@ -130,7 +130,7 @@ class BitgetClient:
             "orderType": "limit" if price else "market",
             "marginCoin": "USDT",
             "size": amount,
-            "side": mode,
+            "side": "buy" if mode == "Buy" else ",
             "tradeSide": "open"
         }
         if price:

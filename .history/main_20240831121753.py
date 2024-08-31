@@ -102,7 +102,7 @@ async def open_order(request_boddy: schemas.Order, user: bool = Depends(get_user
     # Calculate amount of crypto
     if not request_boddy.amount_usdt:
         # Get total assets
-        future_assets_ps = await bitget_client.get_future_positions()
+        future_assets_ps = await bitget_client.get_positions()
         positions = await bitget_client.get_positions()
         total_assets = float(future_assets_ps['data'][0]['usdtEquity'])
         usdt_used = sum(float(tot['marginSize']) for tot in positions['data'])
@@ -130,7 +130,7 @@ async def open_order(request_boddy: schemas.Order, user: bool = Depends(get_user
     place_order = asyncio.create_task(bitget_client.open_order_futures(
         symbol=request_boddy.symbol,
         amount=amount,
-        mode="sell" if request_boddy.mode == "short" else "buy",
+        mode="Sell" if request_boddy.mode == "long" else "Sell",
         price=request_boddy.price
     ))
     await place_order

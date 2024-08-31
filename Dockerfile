@@ -2,7 +2,7 @@
 FROM python:3.12-slim
 
 # Set the working directory in the container
-WORKDIR /home/ubuntu/Bitget_API/bitget_proxy_api
+WORKDIR /
 
 # Install pip packages directly
 RUN pip install --upgrade pip && \

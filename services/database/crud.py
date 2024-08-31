@@ -203,7 +203,7 @@ async def delete_user(session: AsyncSession, user_id: str):
 @db_connection
 async def add_new_error(session: AsyncSession, subject: str, text: str):
     """Add new error log"""
-    new_error = Errors_Logs(subject=subject, text=text)
+    new_error = ErrorsLogs(subject=subject, text=text)
     session.add(new_error)
     await session.flush()
 

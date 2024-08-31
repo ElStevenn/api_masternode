@@ -130,7 +130,7 @@ async def open_order(request_boddy: schemas.Order, user: bool = Depends(get_user
     place_order = asyncio.create_task(bitget_client.open_order_futures(
         symbol=request_boddy.symbol,
         amount=amount,
-        mode="sell" if request_boddy.mode == "short" else "buy",
+        mode="Sell" if request_boddy.mode == "long" else "Buy",
         price=request_boddy.price
     ))
     await place_order
