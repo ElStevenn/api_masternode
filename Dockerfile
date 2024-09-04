@@ -6,7 +6,7 @@ WORKDIR /
 
 # Install pip packages directly
 RUN pip install --upgrade pip && \
-    pip install python-dotenv aiohttp fastapi pydantic uvicorn docker schedule sqlalchemy psycopg2-binary pandas numpy google-api-python-client google-auth google-auth-oauthlib asyncpg
+    pip install python-dotenv aiohttp fastapi pydantic uvicorn docker schedule sqlalchemy psycopg2-binary pandas numpy google-api-python-client google-auth google-auth-oauthlib asyncpg pydantic[email]
 
 
 # Copy the rest of the application code into the container
