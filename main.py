@@ -87,8 +87,9 @@ async def last_order():
 
 @app.get("/get_historical_possition/{symbol}",tags=["Trading"])
 async def get_trade_historical_possition(symbol: str):
+    historical_position = await bitget_client.get_historical_position(symbol)
 
-    return
+    return historical_position
 
 
 @app.post("/open_order_futures_normal", description="Place Order without stoploss and auto calculated leverage", tags=["Trading"])
