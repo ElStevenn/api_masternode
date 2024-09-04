@@ -1,0 +1,12 @@
+python-dotenv
+aiohttp
+fastapi
+pydantic
+uvicorn
+sqlalchemy
+psycopg2-binary
+numpy
+google-api-python-client
+google-auth
+google-auth-oauthlib
+aiofiles
