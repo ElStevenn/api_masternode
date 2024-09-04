@@ -183,7 +183,7 @@ class BitgetClient:
         method = "GET"
         request_path = "/api/v2/mix/position/history-position"
 
-        if not symbol.endswith("USDT"):
+        if not symbol.lower().endswith("usdt"):
             symbol = symbol + "USDT"
 
         params = {
@@ -196,8 +196,16 @@ class BitgetClient:
 
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=headers) as response:
-                return await response.json()
+                response = await response.json()
 
+                if response["code"] == "40034":
+                    raise HTTPException(status_code=404, detail=response["msg"])
+                
+                if response["code"] == "00000":
+                    return response
+                
+                else:
+                    raise HTTPException(status_code=400, detail=f"An error ocurred: {response["msg"]} | Code response: {response["code"]}")
 
 def process_trades(trades_data):
     # Convert the JSON data to a pandas DataFrame
