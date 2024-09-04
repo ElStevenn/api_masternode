@@ -62,6 +62,7 @@ async def get_assets():
 
     # Available
     available = total_assets - usdt_used
+
     return {
         "account_assets": round(total_assets, 2),
         "available": round(available, 2),
@@ -87,7 +88,7 @@ async def last_order():
 
 @app.get("/get_historical_possition/{symbol}",tags=["Trading"])
 async def get_trade_historical_possition(symbol: str):
-
+    
     return
 
 

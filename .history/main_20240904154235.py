@@ -62,6 +62,7 @@ async def get_assets():
 
     # Available
     available = total_assets - usdt_used
+    quit()
     return {
         "account_assets": round(total_assets, 2),
         "available": round(available, 2),
